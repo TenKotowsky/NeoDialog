@@ -1,0 +1,21 @@
+{
+  "name": "NeoDialog",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "NeoDialog": {
+        "$path": "src"
+      }
+    },
+
+    "StarterPlayer": {
+         "$className": "StarterPlayer",
+         "StarterPlayerScripts": {
+          "$className": "StarterPlayerScripts",
+          "$path": "StarterPlayerScripts"
+        }
+      }
+  }
+}

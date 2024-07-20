@@ -1,0 +1,2 @@
+# NeoDialog
+NeoDialog is a module that handles dialog for you! No need to manually write those for loops going through every letter in your text to get that typewrite effect anymore, just use this module to easily create & run dialogs!
