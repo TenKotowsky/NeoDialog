@@ -1,13 +1,16 @@
 --!strict
 --!optimize 2
 
-local UserInputService = game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService") :: UserInputService
 local Dialogs = require(script.Dialogs) :: {}
 
 local Dialog = {} :: dialog
 Dialog.__index = Dialog
 
-local function writeTextInput(textLabel: TextLabel, text: string, interval: number)
+--The dialog sound won't play for those characters
+local ignoredSoundCharacters = {" "}
+
+local function writeTextInput(textLabel: TextLabel, text: string, interval: number, sound: Sound?)
     local inputConnection
     inputConnection = UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
         if (not gameProcessedEvent) and input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -16,9 +19,17 @@ local function writeTextInput(textLabel: TextLabel, text: string, interval: numb
     end)
     textLabel.MaxVisibleGraphemes = 0
     textLabel.Text = text
-    for i = 1, string.len(text), 1 do
+    for i = 1, string.len(textLabel.ContentText) do
         if (not inputConnection.Connected) then break end
         textLabel.MaxVisibleGraphemes = i
+
+        if sound and (not table.find(ignoredSoundCharacters, textLabel.ContentText:sub(i,i))) then
+            local soundClone = sound:Clone()
+            soundClone.Parent = sound.Parent
+            soundClone.PlayOnRemove = true
+            soundClone:Destroy()
+        end
+
         local startTime = os.clock()
         repeat
             task.wait()
@@ -38,11 +49,19 @@ local function writeTextInput(textLabel: TextLabel, text: string, interval: numb
     textLabel.MaxVisibleGraphemes = 0
 end
 
-local function writeTextAuto(textLabel: TextLabel, text: string, interval: number, continueWait: number)
+local function writeTextAuto(textLabel: TextLabel, text: string, interval: number, continueWait: number, sound: Sound?)
     textLabel.MaxVisibleGraphemes = 0
     textLabel.Text = text
-    for i = 1, string.len(text), 1 do
+    for i = 1, string.len(textLabel.ContentText) do
         textLabel.MaxVisibleGraphemes = i
+
+        if sound and (not table.find(ignoredSoundCharacters, textLabel.ContentText:sub(i,i))) then
+            local soundClone = sound:Clone()
+            soundClone.Parent = sound.Parent
+            soundClone.PlayOnRemove = true
+            soundClone:Destroy()
+        end
+
         task.wait(interval)
     end
     task.wait(continueWait)
@@ -60,9 +79,9 @@ local function runDialog(dialog: dialog, dialogID: string) : boolean
             dialog.nameLabel.Text = iteration.Name
         end
         if dialog.continueType == "Input" then
-            writeTextInput(dialog.textLabel, iteration.Text, iteration.Interval)
+            writeTextInput(dialog.textLabel, iteration.Text, iteration.Interval, iteration.Sound)
         else
-            writeTextAuto(dialog.textLabel, iteration.Text, iteration.Interval, iteration.AutoDialogWait)
+            writeTextAuto(dialog.textLabel, iteration.Text, iteration.Interval, iteration.AutoDialogWait, iteration.Sound)
         end
     end
     
