@@ -91,7 +91,9 @@ local function runDialog(dialog: dialog, dialogID: string) : boolean
     dialog.dialogRunning = true
     
     for _, iteration in pairs(dialogData) do
-        dialog.responseContainer.Visible = false
+        if dialog.responseContainer then
+            dialog.responseContainer.Visible = false
+        end
         if dialog.nameLabel then
             dialog.nameLabel.Text = iteration.Name
         end
@@ -103,6 +105,7 @@ local function runDialog(dialog: dialog, dialogID: string) : boolean
         else
             writeTextAuto(dialog.textLabel, iteration.Text, iteration.Interval, iteration.AutoDialogWait, iteration.Sound)
         end
+
         if iteration.Responses and dialog.responseContainer and dialog.responseTemplate then
             awaitingResponse = true
             dialog.responseContainer.Visible = true
