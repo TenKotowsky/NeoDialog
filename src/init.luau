@@ -162,10 +162,10 @@ local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boo
     return true
 end
 
-function Dialog.new(dialogGui: ScreenGui, textLabel: TextLabel, nameLabel: TextLabel?, portraitLabel: ImageLabel?, responseContainer: Instance?, responseTemplate: TextButton?, dialogConfig: dialogConfig?) : dialog
+function Dialog.new(dialogGui: ScreenGui | BillboardGui | SurfaceGui, textLabel: TextLabel, nameLabel: TextLabel?, portraitLabel: ImageLabel?, responseContainer: Instance?, responseTemplate: TextButton?, dialogConfig: dialogConfig?) : dialog
     local self = setmetatable({}, Dialog) :: dialog
 
-    self.gui = dialogGui :: ScreenGui
+    self.gui = dialogGui :: ScreenGui | BillboardGui | SurfaceGui
 	self.textLabel = textLabel :: TextLabel
 	if nameLabel then
 		self.nameLabel = nameLabel :: TextLabel
