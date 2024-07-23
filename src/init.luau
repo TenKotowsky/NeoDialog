@@ -11,7 +11,8 @@ local Dialog = {} :: dialog
 Dialog.__index = Dialog
 
 --The dialog sound won't play for those characters
-local ignoredSoundCharacters = {" "}
+local ignoredSoundCharacters = {" "} :: {}
+local dialogQueue = {} :: {}
 
 local function writeTextInput(textLabel: TextLabel, text: string, interval: number, sound: Sound?)
     textLabel.MaxVisibleGraphemes = 0
@@ -70,11 +71,22 @@ local function writeTextAuto(textLabel: TextLabel, text: string, interval: numbe
     task.wait(continueWait)
 end
 
-local function runDialog(dialog: dialog, dialogID: string) : boolean
+local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boolean?) : boolean
     if (not Dialogs[dialogID]) then return false end
+    local id: number
+    if (not isResponseDialog) then
+        if dialogQueue[1] then
+            id = tick()
+            table.insert(dialogQueue, id)
+            repeat task.wait() until dialogQueue[1] == id
+        else
+            id = tick()
+            table.insert(dialogQueue, id)
+        end
+    end
 
-    local humanoid
-    local previousWalkSpeed
+    local humanoid: Humanoid?
+    local previousWalkSpeed: number
 
 	if dialog.dialogWalkSpeed and player.Character then
 		humanoid = player.Character:FindFirstChildOfClass("Humanoid") :: Humanoid?
@@ -119,7 +131,7 @@ local function runDialog(dialog: dialog, dialogID: string) : boolean
                     for _, button in pairs(dialog.responseContainer:GetChildren()) do
                         if button.Name == "ResponseButton" then button:Destroy() end
                     end
-                    runDialog(dialog, responseDialog)
+                    runDialog(dialog, responseDialog, true)
                     awaitingResponse = false
                 end)
             end
@@ -146,6 +158,8 @@ local function runDialog(dialog: dialog, dialogID: string) : boolean
         humanoid.WalkSpeed = previousWalkSpeed
     end
 
+    if dialogQueue[1] then table.remove(dialogQueue, 1) end
+
     return true
 end
 
@@ -168,7 +182,7 @@ function Dialog.new(dialogGui: ScreenGui, textLabel: TextLabel, nameLabel: TextL
 	end
 
     self.dialogRunning = false :: boolean
-    self.continueType = "Input"
+    self.continueType = "Input" :: "Auto" | "Input"
 
     if dialogConfig then
         
