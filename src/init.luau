@@ -12,7 +12,6 @@ Dialog.__index = Dialog
 
 --The dialog sound won't play for those characters
 local ignoredSoundCharacters = {" "} :: {}
-local dialogQueue = {} :: {}
 
 local function writeTextInput(textLabel: TextLabel, text: string, interval: number, sound: Sound?)
     textLabel.MaxVisibleGraphemes = 0
@@ -75,13 +74,13 @@ local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boo
     if (not Dialogs[dialogID]) then return false end
     local id: number
     if (not isResponseDialog) then
-        if dialogQueue[1] then
+        if dialog.dialogQueue[1] then
             id = tick()
-            table.insert(dialogQueue, id)
-            repeat task.wait() until dialogQueue[1] == id
+            table.insert(dialog.dialogQueue, id)
+            repeat task.wait() until dialog.dialogQueue[1] == id
         else
             id = tick()
-            table.insert(dialogQueue, id)
+            table.insert(dialog.dialogQueue, id)
         end
     end
 
@@ -158,7 +157,7 @@ local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boo
         humanoid.WalkSpeed = previousWalkSpeed
     end
 
-    if dialogQueue[1] then table.remove(dialogQueue, 1) end
+    if dialog.dialogQueue[1] then table.remove(dialog.dialogQueue, 1) end
 
     return true
 end
@@ -195,6 +194,8 @@ function Dialog.new(dialogGui: ScreenGui, textLabel: TextLabel, nameLabel: TextL
         end
 
     end
+
+    self.dialogQueue = {} :: {}
 
     self.run = function(dialogID: string) : boolean
         return runDialog(self, dialogID)
