@@ -7,6 +7,8 @@ It's very easy to create dialog trees and then run them with your gui! It's made
 # Features
 - It's strictly-typed
 - Easily modifyable
+- Queue functionality (when you try to simultaneously run a few dialogs at once, they will get queued up and play in order)
 - Two methods of continuing dialog: automatic and waiting for input
 - You can specify the name of the characters who are talking, dialog sound for each one of them and more
+- Easy to add dialog choices
 - The module comes with [Crygen's TextModule](https://devforum.roblox.com/t/v3-huge-update-textmodule-handle-every-text-features-easily/2200604) (doesn't utilize TextModule's typewrite though) so it's easier to format rich text in dialogs
