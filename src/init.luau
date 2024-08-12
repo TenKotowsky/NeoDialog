@@ -11,7 +11,7 @@ local Dialog = {} :: dialog
 Dialog.__index = Dialog
 
 --The dialog sound won't play for those characters
-local ignoredSoundCharacters = {" "} :: {}
+local ignoredSoundCharacters = {" "} :: {char: string}
 
 local function writeTextInput(textLabel: TextLabel, text: string, interval: number, sound: Sound?)
     textLabel.MaxVisibleGraphemes = 0
@@ -70,6 +70,34 @@ local function writeTextAuto(textLabel: TextLabel, text: string, interval: numbe
     task.wait(continueWait)
 end
 
+local function writeTextAutoInput(textLabel: TextLabel, text: string, interval: number, continueWait: number, sound: Sound?)
+	textLabel.MaxVisibleGraphemes = 0
+    textLabel.Text = text
+    for i = 1, string.len(textLabel.ContentText) do
+        textLabel.MaxVisibleGraphemes = i
+
+        if sound and (not table.find(ignoredSoundCharacters, textLabel.ContentText:sub(i,i))) then
+            local soundClone = sound:Clone()
+            soundClone.Parent = sound.Parent
+            soundClone.PlayOnRemove = true
+            soundClone:Destroy()
+        end
+
+        task.wait(interval)
+    end
+	local startTime = os.clock()
+	local inputConnection
+	inputConnection = UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
+        if (not gameProcessedEvent) and input.UserInputType == Enum.UserInputType.MouseButton1 then
+            inputConnection:Disconnect()
+        end
+    end)
+	repeat
+		task.wait()
+	until (not inputConnection.Connected) or os.clock() - startTime >= continueWait
+	inputConnection:Disconnect()
+end
+
 local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boolean?) : boolean
     if (not Dialogs[dialogID]) then return false end
     local id: number
@@ -113,7 +141,9 @@ local function runDialog(dialog: dialog, dialogID: string, isResponseDialog: boo
         end
         if dialog.continueType == "Input" then
             writeTextInput(dialog.textLabel, iteration.Text, iteration.Interval, iteration.Sound)
-        else
+		elseif dialog.continueType == "AutoInput" then
+			writeTextAutoInput(dialog.textLabel, iteration.Text, iteration.Interval, iteration.AutoDialogWait, iteration.Sound)
+		else
             writeTextAuto(dialog.textLabel, iteration.Text, iteration.Interval, iteration.AutoDialogWait, iteration.Sound)
         end
 
@@ -181,7 +211,7 @@ function Dialog.new(dialogGui: ScreenGui | BillboardGui | SurfaceGui, textLabel:
 	end
 
     self.dialogRunning = false :: boolean
-    self.continueType = "Input" :: "Auto" | "Input"
+    self.continueType = "Input" :: continueTypes
 
     if dialogConfig then
         
@@ -204,8 +234,10 @@ function Dialog.new(dialogGui: ScreenGui | BillboardGui | SurfaceGui, textLabel:
     return self
 end
 
+export type continueTypes = "Auto" | "Input" | "AutoInput"
+
 export type dialogConfig = {
-    continueType: "Auto" | "Input",
+    continueType: continueTypes,
     dialogWalkSpeed: number
 }
 export type dialog = typeof(Dialog.new(Instance.new("ScreenGui"), Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("ImageLabel"), Instance.new("Frame"), Instance.new("TextButton"), {} :: dialogConfig))
